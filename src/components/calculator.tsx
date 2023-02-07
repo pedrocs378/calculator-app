@@ -1,5 +1,5 @@
 /* eslint-disable no-eval */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Box, Flex, SimpleGrid, Text } from '@chakra-ui/react'
 
 import { ActionButton, type ActionType } from './action-button'
@@ -105,7 +105,7 @@ export function Calculator() {
     })
   }
 
-  const handleCalcOperation = useCallback(() => {
+  function handleCalcOperation() {
     setCurrentOperation((prevState) => {
       if (prevState === '0') return prevState
 
@@ -118,7 +118,7 @@ export function Calculator() {
         return String(calculatedOperation)
       }
     })
-  }, [])
+  }
 
   const normalizedOperationLabel = useMemo(() => {
     return {
@@ -152,7 +152,7 @@ export function Calculator() {
       if (event.key === 'Backspace') {
         handleClear('C')
       }
-      if (event.key === 'Delete') {
+      if (event.key === 'Delete' || event.key === 'Escape') {
         handleClear('CE')
       }
       if (event.key === 'Enter') {
@@ -160,12 +160,12 @@ export function Calculator() {
       }
     }
 
-    document.addEventListener('keypress', updateOperationByKeyboard)
+    document.addEventListener('keydown', updateOperationByKeyboard)
 
     return () => {
-      document.removeEventListener('keypress', updateOperationByKeyboard)
+      document.removeEventListener('keydown', updateOperationByKeyboard)
     }
-  }, [handleCalcOperation])
+  }, [])
 
   return (
     <Box
@@ -236,11 +236,7 @@ export function Calculator() {
           onAction={handleUpdateOperation}
         />
         <Box />
-        <ActionButton
-          // gridArea="zero"
-          value="0"
-          onAction={handleUpdateOperation}
-        />
+        <ActionButton value="0" onAction={handleUpdateOperation} />
         <ActionButton
           value="."
           valueLabel=","
