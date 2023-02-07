@@ -1,25 +1,25 @@
 import { useCallback } from 'react'
 import { Button, type ButtonProps } from '@chakra-ui/react'
 
-export type ActionType = 'digit' | 'operator' | 'action'
+export type ButtonType = 'digit' | 'operator' | 'action'
 
-type ActionButtonProps = Omit<ButtonProps, 'children'> & {
-  actionType?: ActionType
+type CalculatorButtonProps = Omit<ButtonProps, 'children'> & {
+  buttonType?: ButtonType
   value: string
   valueLabel?: string
-  onAction?: (value: string, actionType: ActionType) => void
+  onAction?: (value: string, buttonType: ButtonType) => void
 }
 
-export function ActionButton({
-  actionType = 'digit',
+export function CalculatorButton({
+  buttonType = 'digit',
   value,
   valueLabel,
   onAction,
   ...buttonProps
-}: ActionButtonProps) {
+}: CalculatorButtonProps) {
   const handleClick = useCallback(() => {
-    onAction?.(value, actionType)
-  }, [onAction, value, actionType])
+    onAction?.(value, buttonType)
+  }, [onAction, value, buttonType])
 
   return (
     <Button
