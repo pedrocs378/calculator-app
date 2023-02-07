@@ -1,13 +1,15 @@
 /* eslint-disable no-eval */
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Box, Flex, SimpleGrid, Text } from '@chakra-ui/react'
 
 import { ActionButton, type ActionType } from './action-button'
 
 const OPERATORS = ['+', '-', '/', '*', '%']
+const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ',']
 
 export function Calculator() {
-  const [previousOperation, setPreviousOperation] = useState('')
+  const previousOperation = useRef('')
+
   const [currentOperation, setCurrentOperation] = useState('0')
 
   function handleUpdateOperation(value: string, actionType: ActionType) {
@@ -103,23 +105,20 @@ export function Calculator() {
     })
   }
 
-  function handleCalcOperation() {
-    if (currentOperation === '0') return
+  const handleCalcOperation = useCallback(() => {
+    setCurrentOperation((prevState) => {
+      if (prevState === '0') return prevState
 
-    try {
-      const calculatedOperation = eval(currentOperation)
+      previousOperation.current = prevState
+      const calculatedOperation = eval(prevState)
 
       if (isNaN(calculatedOperation)) {
-        setCurrentOperation('error')
+        return 'error'
       } else {
-        setPreviousOperation(currentOperation)
-
-        setCurrentOperation(String(calculatedOperation))
+        return String(calculatedOperation)
       }
-    } catch (error) {
-      console.log(error)
-    }
-  }
+    })
+  }, [])
 
   const normalizedOperationLabel = useMemo(() => {
     return {
@@ -127,9 +126,46 @@ export function Calculator() {
         currentOperation === 'error'
           ? 'Erro'
           : currentOperation.replaceAll('.', ',').replaceAll('*', 'x'),
-      previous: previousOperation.replaceAll('.', ',').replaceAll('*', 'x'),
+      previous: previousOperation.current
+        .replaceAll('.', ',')
+        .replaceAll('*', 'x'),
     }
-  }, [currentOperation, previousOperation])
+  }, [currentOperation])
+
+  useEffect(() => {
+    function updateOperationByKeyboard(event: KeyboardEvent) {
+      if (DIGITS.includes(event.key)) {
+        if (event.key === ',') {
+          handleUpdateOperation('.', 'digit')
+        } else {
+          handleUpdateOperation(event.key, 'digit')
+        }
+      }
+      if (OPERATORS.includes(event.key)) {
+        if (event.key === '%') {
+          handleCalcPercentage()
+        } else {
+          handleUpdateOperation(event.key, 'operator')
+        }
+      }
+
+      if (event.key === 'Backspace') {
+        handleClear('C')
+      }
+      if (event.key === 'Delete') {
+        handleClear('CE')
+      }
+      if (event.key === 'Enter') {
+        handleCalcOperation()
+      }
+    }
+
+    document.addEventListener('keypress', updateOperationByKeyboard)
+
+    return () => {
+      document.removeEventListener('keypress', updateOperationByKeyboard)
+    }
+  }, [handleCalcOperation])
 
   return (
     <Box
@@ -152,7 +188,7 @@ export function Calculator() {
         </Text>
       </Flex>
 
-      <SimpleGrid columns={4} gap="4" mt="8">
+      <SimpleGrid gridAutoRows="auto" columns={4} gap="4" mt="8">
         <ActionButton
           value="CE"
           actionType="action"
@@ -199,8 +235,12 @@ export function Calculator() {
           colorScheme="blue"
           onAction={handleUpdateOperation}
         />
-        <ActionButton value="+/-" />
-        <ActionButton value="0" onAction={handleUpdateOperation} />
+        <Box />
+        <ActionButton
+          // gridArea="zero"
+          value="0"
+          onAction={handleUpdateOperation}
+        />
         <ActionButton
           value="."
           valueLabel=","
