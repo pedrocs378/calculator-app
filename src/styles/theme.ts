@@ -2,6 +2,7 @@ import {
   type ColorMode,
   type ColorModeProviderProps,
   extendTheme,
+  type StyleFunctionProps,
 } from '@chakra-ui/react'
 
 export const colorModeManager: ColorModeProviderProps['colorModeManager'] = {
@@ -19,6 +20,13 @@ export const colorModeManager: ColorModeProviderProps['colorModeManager'] = {
 }
 
 export const theme = extendTheme({
+  styles: {
+    global: (props: StyleFunctionProps) => ({
+      body: {
+        bg: props.colorMode === 'dark' ? 'gray.800' : 'gray.100',
+      },
+    }),
+  },
   config: {
     initialColorMode: 'dark',
     useSystemColorMode: false,

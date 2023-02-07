@@ -1,6 +1,12 @@
 /* eslint-disable no-eval */
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { Box, Flex, SimpleGrid, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  SimpleGrid,
+  Text,
+  useColorModeValue,
+} from '@chakra-ui/react'
 
 import { CalculatorButton, type ButtonType } from './calculator-button'
 
@@ -22,6 +28,10 @@ import {
 export function Calculator() {
   const [previousOperation, setPreviousOperation] = useState('')
   const [currentOperation, setCurrentOperation] = useState(INITIAL_OPERATION)
+
+  const containerBg = useColorModeValue('gray.50', 'gray.900')
+  const containerBorderColor = useColorModeValue('gray.300', 'gray.600')
+  const previousTextColor = useColorModeValue('gray.400', 'gray.600')
 
   function handleActionButton(buttonValue: string) {
     if (buttonValue === Actions.Delete) {
@@ -112,15 +122,15 @@ export function Calculator() {
       p="8"
       pt="12"
       rounded="3xl"
-      bg="gray.900"
+      bg={containerBg}
       w="full"
       maxW="sm"
       boxShadow="lg"
       borderTop="4px"
-      borderColor="gray.600"
+      borderColor={containerBorderColor}
     >
       <Flex flexDir="column" align="flex-end" maxW="full" overflow="hidden">
-        <Text as="span" color="gray.600" minH="6" whiteSpace="nowrap">
+        <Text as="span" color={previousTextColor} minH="6" whiteSpace="nowrap">
           {normalizedOperationLabel.previous}
         </Text>
         <Text as="strong" fontSize="3xl" whiteSpace="nowrap">
