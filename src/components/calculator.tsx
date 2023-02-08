@@ -1,5 +1,5 @@
 /* eslint-disable no-eval */
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo } from 'react'
 import {
   Box,
   Flex,
@@ -7,6 +7,8 @@ import {
   Text,
   useColorModeValue,
 } from '@chakra-ui/react'
+
+import { useOperation } from '../hooks/use-operation'
 
 import { CalculatorButton, type ButtonType } from './calculator-button'
 
@@ -26,46 +28,46 @@ import {
 } from '../helpers'
 
 export function Calculator() {
-  const [previousOperation, setPreviousOperation] = useState('')
-  const [currentOperation, setCurrentOperation] = useState(INITIAL_OPERATION)
+  const [{ current, previous }, setOperation] = useOperation(INITIAL_OPERATION)
 
   const containerBg = useColorModeValue('gray.50', 'gray.900')
   const containerBorderColor = useColorModeValue('gray.300', 'gray.600')
   const previousTextColor = useColorModeValue('gray.400', 'gray.600')
 
-  console.log('prev', previousOperation)
+  const handleActionButton = useCallback(
+    (buttonValue: string) => {
+      if (buttonValue === Actions.Delete) {
+        setOperation(INITIAL_OPERATION)
+      } else if (buttonValue === Actions.Backspace) {
+        setOperation(removeLastDigitOrOperator)
+      } else {
+        setOperation((prevState) => {
+          const calculated = calcOperation(prevState)
 
-  function handleActionButton(buttonValue: string) {
-    if (buttonValue === Actions.Delete) {
-      setCurrentOperation(INITIAL_OPERATION)
-    } else if (buttonValue === Actions.Backspace) {
-      setCurrentOperation(removeLastDigitOrOperator)
-    } else {
-      let previous = ''
+          return calculated.value
+        }, true)
+      }
+    },
+    [setOperation],
+  )
 
-      setCurrentOperation((prevState) => {
-        const calculated = calcOperation(prevState)
-
-        previous = calculated.previous
-
-        return calculated.value
+  const handleDigitButton = useCallback(
+    (buttonValue: string) => {
+      setOperation((prevState) => {
+        return insertDigit(buttonValue, prevState)
       })
+    },
+    [setOperation],
+  )
 
-      setPreviousOperation(() => previous)
-    }
-  }
-
-  function handleDigitButton(buttonValue: string) {
-    setCurrentOperation((prevState) => {
-      return insertDigit(buttonValue, prevState)
-    })
-  }
-
-  function handleOperatorButton(buttonValue: string) {
-    setCurrentOperation((prevState) => {
-      return insertOperator(buttonValue, prevState)
-    })
-  }
+  const handleOperatorButton = useCallback(
+    (buttonValue: string) => {
+      setOperation((prevState) => {
+        return insertOperator(buttonValue, prevState)
+      })
+    },
+    [setOperation],
+  )
 
   const handleButtonType = useCallback(
     (value: string, buttonType: ButtonType) => {
@@ -79,18 +81,18 @@ export function Calculator() {
 
       buttonTypeFn(value)
     },
-    [],
+    [handleActionButton, handleDigitButton, handleOperatorButton],
   )
 
   const normalizedOperationLabel = useMemo(() => {
     return {
       current:
-        currentOperation === 'error'
+        current === 'error'
           ? 'Erro'
-          : currentOperation.replaceAll('.', ',').replaceAll('*', 'x'),
-      previous: previousOperation.replaceAll('.', ',').replaceAll('*', 'x'),
+          : current.replaceAll('.', ',').replaceAll('*', 'x'),
+      previous: previous.replaceAll('.', ',').replaceAll('*', 'x'),
     }
-  }, [currentOperation, previousOperation])
+  }, [current, previous])
 
   useEffect(() => {
     function updateOperationByKeyboard(event: KeyboardEvent) {
@@ -154,7 +156,7 @@ export function Calculator() {
                   buttonType={button.buttonType}
                   colorScheme={button.colorScheme}
                   variant={variant}
-                  isDisabled={isEnterButton && currentOperation === '0'}
+                  isDisabled={isEnterButton && current === '0'}
                   onAction={handleButtonType}
                 />
               ) : (
