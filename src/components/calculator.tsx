@@ -33,6 +33,8 @@ export function Calculator() {
   const containerBorderColor = useColorModeValue('gray.300', 'gray.600')
   const previousTextColor = useColorModeValue('gray.400', 'gray.600')
 
+  console.log('prev', previousOperation)
+
   function handleActionButton(buttonValue: string) {
     if (buttonValue === Actions.Delete) {
       setCurrentOperation(INITIAL_OPERATION)
