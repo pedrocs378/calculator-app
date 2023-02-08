@@ -24,6 +24,7 @@ export const theme = extendTheme({
     global: (props: StyleFunctionProps) => ({
       body: {
         bg: props.colorMode === 'dark' ? 'gray.800' : 'gray.100',
+        fontFamily: "'Inter', sans-serif",
       },
     }),
   },
