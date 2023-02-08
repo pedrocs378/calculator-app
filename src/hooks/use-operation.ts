@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 type Operation = {
   previous: string
@@ -13,17 +13,16 @@ type SetState = (
 type UseOperation = [Operation, SetState]
 
 export function useOperation(initialOperation = ''): UseOperation {
-  const previous = useRef('')
-
+  const [previous, setPrevious] = useState('')
   const [current, setCurrent] = useState(initialOperation)
 
   const setState = useCallback(
-    (newState: React.SetStateAction<string>, setPrevious = false) => {
+    (newState: React.SetStateAction<string>, shouldSetPrevious = false) => {
       const stateValue =
         typeof newState === 'string' ? newState : newState(current)
 
-      if (setPrevious) {
-        previous.current = current
+      if (shouldSetPrevious) {
+        setPrevious(current)
       }
 
       setCurrent(stateValue)
@@ -31,5 +30,5 @@ export function useOperation(initialOperation = ''): UseOperation {
     [current],
   )
 
-  return [{ previous: previous.current, current }, setState]
+  return [{ previous, current }, setState]
 }
